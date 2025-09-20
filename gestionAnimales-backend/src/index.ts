@@ -25,22 +25,6 @@ app.get("/", async (req, res) => {
   res.send("the API is working!");
 });
 
-app.get("/db", async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("animals")
-      .select("*")
-      .limit(1);
-
-    if (error) throw error;
-
-    res.json(data);
-  } catch (err) {
-    console.error("❌ Error de conexión:", err);
-    res.status(500).send("Error en la conexión con Supabase");
-  }
-});
-
 app.listen(process.env.PORT, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${process.env.PORT}`);
 });
