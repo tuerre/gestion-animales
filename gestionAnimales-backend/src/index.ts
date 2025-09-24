@@ -1,10 +1,12 @@
-import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
+import cors from "cors";
 import express from "express";
-import { supabase } from "./supabase-client.ts";
 
+import usersRoutes from "./routes/users.ts";
+
+// routes
 import authRoutes from "./routes/auth.ts";
 import animalsRoutes from "./routes/animals.ts";
 
@@ -17,9 +19,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
 
-
 app.use("/auth", authRoutes);
 app.use("/animals", animalsRoutes);
+app.use("/users", usersRoutes);
 
 app.get("/", async (req, res) => {
   res.send("the API is working!");
