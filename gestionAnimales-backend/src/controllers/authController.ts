@@ -24,13 +24,18 @@ export const registerUser = async (req: any, res: any) => {
 
     const { data, error } = await supabase
       .from("users")
-      .insert([{ username: username, name: name, email: email, password_hash: password_hash }])
+      .insert([{ username: username, name: name, email: email, password_hash: password_hash, avatar_url: "https://gysasjmuglpuowjgzqyw.supabase.co/storage/v1/object/sign/avatars/user.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9kMjUwMTUwYi0zMGEzLTQzMzAtOTg4ZC0yMjRmMzkyMjEzMTUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhdmF0YXJzL3VzZXIud2VicCIsImlhdCI6MTc1ODczNDgwMiwiZXhwIjoyMDc0MDk0ODAyfQ.RgkmJxRijzwY-5TwT3gvl0x5DrHd5T2I-CYGvJEJ7lE" }])
       .select()
-      .single();
 
     if (error) throw error;
+    if (!data || data.length === 0) {
+      return res.status(500).json({ msg: "No se pudo registrar el usuario" });
+    }
 
-    res.status(201).json({ msg: "Registro exitoso", user: data });
+    res.status(201).json({
+      msg: "Registro exitoso",
+      user: data[0],
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Error en el servidor" });
@@ -49,17 +54,15 @@ export const loginUser = async (req, res) => {
       const { data: user } = await supabase
         .from("users")
         .select("*")
-        .eq("username", username)
-        .single();
-  
+        .eq("username", username);  
       if (!user) return res.status(404).json({ Error: "Usuario no encontrado" });
   
-      const passwordMatch = await bcrypt.compare(password, user.password_hash);
+      const passwordMatch = await bcrypt.compare(password, user[0].password_hash);
   
       if (!passwordMatch) return res.status(401).json({ Error: "Contraseña incorrecta" });
   
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user[0].id, email: user[0].email },
         process.env.JWT_SECRET as string,
         { expiresIn: "1h" }
       );
