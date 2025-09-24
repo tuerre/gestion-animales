@@ -1,6 +1,6 @@
 import { supabase } from "../supabase-client.ts";
 
-export const getAllAnimals = async (req, res) => {
+export const getAllAnimals = async (res) => {
     try {
         const { data, error } = await supabase
         .from("animals")
@@ -29,16 +29,17 @@ export const getAnimalById = async (req, res) => {
     }
 }
 
-export const uploadAnimal = async (req: any, res: any) => {
+export const uploadAnimal = async (req, res) => {
     try {
         const { name, species, race, age } = req.body;
+        const user_id = req.user.id;
         const { data, error } = await supabase
         .from("animals")
-        .insert([{ name: name, species: species, race: race, age: age }])
+        .insert([{ name, species, race, age, user_id }])
         .select()
         .single();
         if (error) return res.status(400).json({ error: error.message });
-    res.status(201).json(data);
+    res.status(201).json({ message: `${name} ahora tiene un lugar seguro en el sistema <3 | Animal registrado exitosamente.` });
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
@@ -48,14 +49,17 @@ export const updateAnimal = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, species, race, age } = req.body;
+        const user_id = req.user.id;
         const { data, error } = await supabase
         .from("animals")
-        .update([{ name: name, species: species, race: race, age: age }])
+        .update([{ name, species, race, age, user_id }])
         .eq("id", id)
-        .select()
-        .single();
+        .select();
         if (error) return res.status(400).json({ error: error.message });
-    res.status(200).json(data);
+        if (!data || data.length === 0) {
+            return res.status(404).json({ error: "Animal no encontrado" });
+        }
+    res.status(200).json({ message: `Los datos de ${name} han sido actualizados exitosamente` });
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
@@ -68,10 +72,14 @@ export const deleteAnimal = async (req, res) => {
         .from("animals")
         .delete()
         .eq("id", id)
-        .select()
-        .single();
+        .select();
         if (error) return res.status(400).json({ error: error.message });
-    res.status(200).json(data);
+        if (!data || data.length === 0) {
+            return res.status(404).json({ error: "Animal no encontrado" });
+        }
+        res.status(200).json({
+            message: `${data[0].name} se ha retirado del sistema:( | Animal eliminado exitosamente`,
+          });
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
