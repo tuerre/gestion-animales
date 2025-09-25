@@ -1,0 +1,117 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="LunarPaws | Login">
+    <main class="flex justify-center items-center h-screen">
+        <div class="w-full max-w-md bg-[#060010] border border-[#271f32] rounded-2xl shadow-lg p-8">
+            <h1 class="text-2xl font-semibold mb-6">Iniciar sesión</h1>
+  
+            <form id="loginForm" class="space-y-4" autocomplete="on">
+            <div>
+                <label for="username" class="block text-sm font-medium mb-1">
+                    Usuario
+                  </label>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    class="w-full px-4 py-2 border border-[#271f32] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  />
+            </div>
+    
+            <div>
+                <label for="password" class="block text-sm font-medium mb-1">
+                Contraseña
+                </label>
+                <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minlength="8"
+                class="w-full px-4 py-2 border border-[#271f32] rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                />
+            </div>
+    
+            <button
+                id="submitBtn"
+                type="submit"
+                class="w-full py-3 bg-[#271f32] rounded-lg font-medium disabled:opacity-60"
+            > Entrar</button>
+                <p class="text-sm mt-2">¿No tienes una cuenta? <a href="/register" class="text-[#3ECF8E] font-medium">Registrarme</a></p>
+                <p id="message" class="text-sm mt-2" aria-live="polite"></p>
+            </form>
+            </div>
+        </div>
+      </main>
+  
+      <script type="module">
+
+        const form = document.getElementById("loginForm");
+        const messageEl = document.getElementById("message");
+        const submitBtn = document.getElementById("submitBtn");
+  
+        function showError(msg) {
+          messageEl.textContent = msg;
+          messageEl.classList.remove("text-green-600");
+          messageEl.classList.add("text-red-600");
+        }
+  
+        function showSuccess(msg) {
+          messageEl.textContent = msg;
+          messageEl.classList.remove("text-red-600");
+          messageEl.classList.add("text-green-600");
+        }
+  
+        async function handleSubmit(e) {
+          e.preventDefault();
+          messageEl.textContent = "";
+  
+          const formData = new FormData(form);
+          const payload = {
+            username: formData.get("username").trim(),
+            password: formData.get("password"),
+          };
+  
+          if (!payload.username || !payload.password) {
+            return showError("Todos los campos son obligatorios.");
+          }
+  
+          submitBtn.disabled = true;
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = "Entrando...";
+  
+          try {
+          const res = await fetch("http://localhost:4000/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(payload),
+          });
+  
+            const data = await res.json().catch(() => ({}));
+  
+            if (!res.ok) {
+              showError(data?.Error || data?.msg || "Error en el login.");
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalText;
+              return;
+            }
+  
+            showSuccess("Inicio de sesión exitoso");
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 1000);
+          } catch (err) {
+            console.error(err);
+            showError("Error de red o backend caído.");
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+  
+        form.addEventListener("submit", handleSubmit);
+      </script>
+</Layout>

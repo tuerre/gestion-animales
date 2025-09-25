@@ -1,0 +1,96 @@
+<nav>
+    <div class="flex items-center justify-evenly pt-6 pb-4 border-b border-[#271f32]">
+        <div class="flex items-center gap-10">
+            <div class="flex items-center gap-1">
+                <!-- <img src="/glowCat.webp" class="select-none" alt="LunarPaws"> -->
+                <a class="text-2xl font-bold" href="/">lunarpaws</a>
+            </div>
+            <div class="flex items-center gap-6">
+                <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/">GlowPets</a>
+                <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/">Buscar</a>
+                <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/dashboard">Dashboard</a>
+                <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/blog">Blog</a>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="https://github.com/tuerre/gestion-animales" target="_blank" class="hidden lg:flex items-center justify-center space-x-2 px-2.5 py-1 h-[26px] text-xs font-regular text-foreground-light border border-transparent rounded-md cursor-pointer transition-all duration-200 ease-out hover:bg-surface-300 hover:text-foreground focus:outline-none focus-visible:outline-4 focus-visible:outline-offset-1 focus-visible:outline-border-strong">
+                <span class="flex items-center gap-1 truncate text-[15px] font-semibold text-[#fafafad7]">
+                    <svg class="w-6 h-6" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 2.22168C5.23312 2.22168 2.58496 4.87398 2.58496 8.14677C2.58496 10.7642 4.27962 12.9853 6.63026 13.7684C6.92601 13.8228 7.03366 13.6401 7.03366 13.4827C7.03366 13.3425 7.02893 12.9693 7.02597 12.4754C5.38041 12.8333 5.0332 11.681 5.0332 11.681C4.76465 10.996 4.37663 10.8139 4.37663 10.8139C3.83954 10.4471 4.41744 10.4542 4.41744 10.4542C5.01072 10.4956 5.32303 11.0647 5.32303 11.0647C5.85065 11.9697 6.70774 11.7082 7.04431 11.5568C7.09873 11.1741 7.25134 10.9132 7.42051 10.7654C6.10737 10.6157 4.72621 10.107 4.72621 7.83683C4.72621 7.19031 4.95689 6.66092 5.33486 6.24686C5.27394 6.09721 5.07105 5.49447 5.39283 4.67938C5.39283 4.67938 5.88969 4.51967 7.01947 5.28626C7.502 5.15466 7.99985 5.08763 8.5 5.08692C9.00278 5.08929 9.50851 5.15495 9.98113 5.28626C11.1103 4.51967 11.606 4.67879 11.606 4.67879C11.9289 5.49447 11.7255 6.09721 11.6651 6.24686C12.0437 6.66092 12.2732 7.19031 12.2732 7.83683C12.2732 10.1129 10.8897 10.6139 9.5724 10.7606C9.78475 10.9434 9.97344 11.3048 9.97344 11.8579C9.97344 12.6493 9.96634 13.2887 9.96634 13.4827C9.96634 13.6413 10.0728 13.8258 10.3733 13.7678C11.5512 13.3728 12.5751 12.6175 13.3003 11.6089C14.0256 10.6002 14.4155 9.38912 14.415 8.14677C14.415 4.87398 11.7663 2.22168 8.5 2.22168Z" fill="currentColor"></path>
+                    </svg>
+                    Repo
+                </span>
+            </a>
+
+            <div>
+                <a id="login" class="hidden font-medium bg-[#006239] hover:bg-[#006239]/80 border border-[#017947]/75 hover:border-[#006239]/60 text-[15px] px-2.5 py-1 rounded-md transition-all" href="/login">Login or Sign Up</a>
+                <button id="logout" class="hidden cursor-pointer font-medium bg-[#620000] hover:bg-[#620000]/80 border border-[#620000]/75 hover:border-[#620000]/60 text-[15px] px-2.5 py-1 rounded-md transition-all">Logout</button>
+            </div>
+
+            <div>
+                <button id="profile-button" title="View or Manage Profile" class="cursor-pointer">
+                    <img id="user-avatar" src="" class="select-none size-[40px] rounded-full" alt="">
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script type="module">
+    async function checkAuth() {
+        try {
+            const res = await fetch("http://localhost:4000/auth/status", {
+            credentials: "include",
+            });
+
+            if (!res.ok) {
+            return { isLoggedIn: false, user: null };
+            }
+
+            const data = await res.json();
+            return { isLoggedIn: true, user: data.user };
+        } catch (err) {
+            console.error("Error verificando sesión. Iniciando sesión como invitado.");
+            return { isLoggedIn: false, user: null };
+        }
+    }
+
+    async function initAuth() {
+        const { isLoggedIn, user } = await checkAuth();
+        const loginBtn = document.querySelector("#login");
+        const logoutBtn = document.querySelector("#logout");
+        const profileBtn = document.querySelector("#profile-button");
+        const userAvatar = document.querySelector("#user-avatar");
+
+    if (isLoggedIn) {
+        loginBtn.style.display = "none";
+        logoutBtn.style.display = "block";
+        profileBtn.style.display = "block";
+        userAvatar.src = user.avatar_url || "/default-avatar.png";
+    } else {
+        loginBtn.style.display = "block";
+        logoutBtn.style.display = "none";
+        profileBtn.style.display = "none";
+    }
+    }
+
+    initAuth();
+
+    document.getElementById("logout").addEventListener("click", async () => {
+        try {
+            const res = await fetch("http://localhost:4000/auth/logout", {
+            method: "POST",
+            credentials: "include",
+            });
+
+            if (!res.ok) {
+            throw new Error("Error cerrando sesión");
+            }
+
+            initAuth();
+        } catch (err) {
+            console.error("Error cerrando sesión:", err);
+        }
+    });
+</script>
