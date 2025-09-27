@@ -1,3 +1,6 @@
+---
+import DropdownProfileMenu from "./DropdownProfileMenu.astro";
+---
 <nav>
     <div class="flex items-center justify-evenly pt-6 pb-4 border-b border-[#271f32]">
         <div class="flex items-center gap-10">
@@ -7,7 +10,7 @@
             </div>
             <div class="flex items-center gap-6">
                 <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/">GlowPets</a>
-                <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/">Buscar</a>
+                <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/">Search</a>
                 <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/dashboard">Dashboard</a>
                 <a class="text-[17px] font-semibold text-[#fafafaf3] hover:text-[#3ECF8E]" href="/blog">Blog</a>
             </div>
@@ -24,14 +27,16 @@
             </a>
 
             <div>
-                <a id="login" class="hidden font-medium bg-[#006239] hover:bg-[#006239]/80 border border-[#017947]/75 hover:border-[#006239]/60 text-[15px] px-2.5 py-1 rounded-md transition-all" href="/login">Login or Sign Up</a>
-                <button id="logout" class="hidden cursor-pointer font-medium bg-[#620000] hover:bg-[#620000]/80 border border-[#620000]/75 hover:border-[#620000]/60 text-[15px] px-2.5 py-1 rounded-md transition-all">Logout</button>
+                <a id="redirectionBtn" class="hidden font-medium bg-[#006239] hover:bg-[#006239]/80 border border-[#017947]/75 hover:border-[#006239]/60 text-[15px] px-2.5 py-1 rounded-md transition-all" href="/login">Login or Sign Up</a>
             </div>
 
-            <div>
-                <button id="profile-button" title="View or Manage Profile" class="cursor-pointer">
+            <div id="profileMenu" class="relative">
+                <button id="profile-button" title="View or Manage Profile" class="cursor-pointer hidden">
                     <img id="user-avatar" src="" class="select-none size-[40px] rounded-full" alt="">
                 </button>
+                <div id="dropdown-menu" class="hidden">
+                    <DropdownProfileMenu email="${user?.email || 'usuario@ejemplo.com'}" />
+                </div>
             </div>
         </div>
     </div>
@@ -41,11 +46,11 @@
     async function checkAuth() {
         try {
             const res = await fetch("http://localhost:4000/auth/status", {
-            credentials: "include",
+                credentials: "include",
             });
 
             if (!res.ok) {
-            return { isLoggedIn: false, user: null };
+                return { isLoggedIn: false, user: null };
             }
 
             const data = await res.json();
@@ -56,41 +61,67 @@
         }
     }
 
+    function toggleDropdown() {
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        if (dropdownMenu) {
+            dropdownMenu.classList.toggle('hidden');
+        }
+    }
+
+    document.addEventListener('click', (event) => {
+        const profileMenu = document.getElementById('profileMenu');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const profileButton = document.getElementById('profile-button');
+        
+        if (profileMenu && dropdownMenu && profileButton && 
+            !profileMenu.contains(event.target) && 
+            !dropdownMenu.contains(event.target)) {
+            dropdownMenu.classList.add('hidden');
+        }
+    });
+
     async function initAuth() {
         const { isLoggedIn, user } = await checkAuth();
-        const loginBtn = document.querySelector("#login");
-        const logoutBtn = document.querySelector("#logout");
-        const profileBtn = document.querySelector("#profile-button");
-        const userAvatar = document.querySelector("#user-avatar");
+        const redirectionBtn = document.getElementById("redirectionBtn");
+        const profileMenu = document.getElementById("profileMenu");
+        const profileButton = document.getElementById("profile-button");
+        const dropdownMenu = document.getElementById("dropdown-menu");
+        const userAvatar = document.getElementById("user-avatar");
 
-    if (isLoggedIn) {
-        loginBtn.style.display = "none";
-        logoutBtn.style.display = "block";
-        profileBtn.style.display = "block";
-        userAvatar.src = user.avatar_url || "/default-avatar.png";
-    } else {
-        loginBtn.style.display = "block";
-        logoutBtn.style.display = "none";
-        profileBtn.style.display = "none";
-    }
+        if (isLoggedIn && user) {
+            if (profileButton) {
+                profileButton.classList.remove("hidden");
+                if (userAvatar && user.avatar_url) {
+                    userAvatar.src = user.avatar_url;
+                }
+                profileButton.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleDropdown();
+                };
+            }
+            
+            if (redirectionBtn) {
+                redirectionBtn.classList.remove("hidden");
+                redirectionBtn.textContent = "Dashboard";
+                redirectionBtn.href = "/dashboard";
+            }
+        } else {
+            if (redirectionBtn) {
+                redirectionBtn.classList.remove("hidden");
+                redirectionBtn.textContent = "Login or Sign Up";
+                redirectionBtn.href = "/login";
+            }
+            
+            // Ocultar menú de perfil
+            if (profileButton) {
+                profileButton.classList.add("hidden");
+            }
+            if (dropdownMenu) {
+                dropdownMenu.classList.add("hidden");
+            }
+        }
     }
 
     initAuth();
-
-    document.getElementById("logout").addEventListener("click", async () => {
-        try {
-            const res = await fetch("http://localhost:4000/auth/logout", {
-            method: "POST",
-            credentials: "include",
-            });
-
-            if (!res.ok) {
-            throw new Error("Error cerrando sesión");
-            }
-
-            initAuth();
-        } catch (err) {
-            console.error("Error cerrando sesión:", err);
-        }
-    });
 </script>
+
