@@ -33,16 +33,20 @@ export const getAnimalById = async (req, res) => {
 
 export const uploadAnimal = async (req, res) => {
     try {
-        const { name, species, race, age } = req.body;
+        const { name, species, race, age, animal_photo_url } = req.body;
+        if (!name || !species || !race || !age) {
+            return res.status(400).json({ error: "Faltan datos obligatorios" });
+        }
+
         const user_id = req.user.id;
         const { data, error } = await supabase
             .from("animals")
-            .insert([{ name, species, race, age, user_id }])
+            .insert([{ name, species, race, age, animal_photo_url, user_id }])
             .select()
             .single();
         if (error) return res.status(400).json({ error: error.message });
 
-        res.status(201).json({ message: `${name} ahora tiene un lugar seguro en el sistema <3 | Animal registrado exitosamente.` });
+        res.status(201).json({ message: `${name} ahora tiene un lugar seguro en el sistema <3 | Animal registrado exitosamente` });
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }
@@ -53,7 +57,7 @@ export const updateAnimal = async (req, res) => {
         const id = Number(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: "ID inválido" });
 
-        const { name, species, race, age } = req.body;
+        const { name, species, race, age, animal_photo_url } = req.body;
         const user_id = req.user.id;
 
         const { data: animalData, error: animalError } = await supabase
@@ -70,7 +74,7 @@ export const updateAnimal = async (req, res) => {
 
         const { data, error } = await supabase
             .from("animals")
-            .update({ name, species, race, age })
+            .update({ name, species, race, age, animal_photo_url })
             .eq("id", id)
             .select();
         if (error) return res.status(400).json({ error: error.message });
