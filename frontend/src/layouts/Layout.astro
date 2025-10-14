@@ -3,10 +3,12 @@ import Navbar from "@/components/Navbar.astro";
 import "../styles/global.css";
 
 interface Props {
-  title: string
+  title: string,
+  showNavbar?: boolean
 }
 
 const { title = "LunarPaws | Gestion de animales" } = Astro.props
+const {showNavbar = true} = Astro.props;
 ---
 
 <!doctype html>
@@ -28,7 +30,7 @@ const { title = "LunarPaws | Gestion de animales" } = Astro.props
 		<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
 	</head>
 	<body>
-		<Navbar />
+		{showNavbar && <Navbar />}
 		<slot />
 	</body>
 </html>
